@@ -164,6 +164,10 @@ textarea {
     color: #0066cc;
 }
 
+.z-score-cell[style*="color: #e74c3c"] {
+    font-weight: bold;
+}
+
 .small-table {
     margin: 10px 0;
     border-collapse: collapse;
@@ -474,20 +478,13 @@ button:hover {
     background-color: #f8f9fa;
 }
 
-/* Инлайн-стили для специфических элементов (оставлены в HTML) */
-/* Эти стили управляются через атрибут style в HTML */
-
-/* Стили для Z-score индикации (дополнение) */
-.z-score-cell[style*="color: #e74c3c"] {
-    font-weight: bold;
-}
-
-/* Адаптивность для мобильных устройств */
+/* МОБИЛЬНЫЕ СТИЛИ - ДОБАВЛЕНО ДЛЯ ИСПРАВЛЕНИЯ РАБОТЫ НА МОБИЛЬНЫХ УСТРОЙСТВАХ */
 @media (max-width: 768px) {
     body {
         padding: 10px;
         font-size: 13px;
     }
+    
     .patient-info {
         grid-template-columns: 1fr;
     }
@@ -519,16 +516,17 @@ button:hover {
         align-items: flex-start;
         gap: 8px;
     }
-}
+    
     /* Увеличить размер полей ввода для мобильных */
     input[type="text"],
     input[type="number"],
     input[type="date"],
     select,
     textarea {
-        padding: 8px !important; /* Увеличиваем padding */
-        font-size: 16px !important; /* Увеличиваем шрифт для избежания зума */
+        padding: 8px !important;
+        font-size: 16px !important; /* Увеличиваем шрифт для избежания зума iOS */
         min-height: 44px !important; /* Минимальная высота для тач-интерфейса */
+        width: 100% !important;
     }
     
     /* Улучшить видимость Z-score на мобильных */
@@ -554,5 +552,59 @@ button:hover {
         min-height: 44px;
         min-width: 44px;
         padding: 10px 15px !important;
+    }
+    
+    /* Улучшить отображение чекбоксов и селектов */
+    input[type="checkbox"] {
+        transform: scale(1.3);
+        margin-right: 8px;
+    }
+    
+    select {
+        padding: 10px !important;
+        height: 44px;
+    }
+    
+    /* Улучшить антропометрические поля */
+    .anthropometry-input-group input {
+        width: 100px !important;
+        font-size: 16px;
+    }
+    
+    /* Улучшить строку вывода */
+    .output-item {
+        width: 100%;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+    
+    .output-item input {
+        width: 120px !important;
+    }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+        font-size: 12px;
+    }
+    
+    .header h1 {
+        font-size: 14px;
+    }
+    
+    .measurements-table {
+        font-size: 10px;
+    }
+    
+    .small-table {
+        font-size: 11px;
+    }
+    
+    .template-manager {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
 }
