@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Протокол эхокардиографического исследования</title>
+    
+    <!-- Подключение всех CSS и JS файлов -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Подключение модулей JavaScript -->
+    <script src="templates.js" defer></script>
+    <script src="calculations.js" defer></script>
+    <script src="form-manager.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <!-- Статус приложения (скрыт по умолчанию) -->
+    <div id="appStatus" style="display: none;"></div>
+
+    <div class="header">
+        <!-- Шаблон учреждения -->
+        <div class="template-section">
+            <div class="template-controls">
+                <input type="checkbox" id="institutionTemplateCheckbox" onchange="toggleTemplate('institution')">
+                <label for="institutionTemplateCheckbox">Шаблон учреждения:</label>
+                <select id="institutionTemplateSelect" class="template-select" onchange="applyTemplate('institution')">
+                    <option value="">Выберите шаблон</option>
+                </select>
+                <input type="text" id="institutionTemplateInput" class="template-input" placeholder="Новый шаблон учреждения">
+                <button onclick="addTemplate('institution')" class="small-button">Добавить</button>
+                <div class="template-actions">
+                    <button onclick="editTemplate('institution')" class="small-button" style="background: #28a745;">Изменить</button>
+                    <button onclick="deleteTemplate('institution')" class="small-button" style="background: #dc3545;">Удалить</button>
+                </div>
+            </div>
+            <div id="institutionContent" class="template-content">
+                <!-- Динамически заполняется -->
+            </div>
+        </div>
+
+        <!-- Шаблон отделения -->
+        <div class="template-section">
+            <div class="template-controls">
+                <input type="checkbox" id="departmentTemplateCheckbox" onchange="toggleTemplate('department')">
+                <label for="departmentTemplateCheckbox">Шаблон отделения:</label>
+                <select id="departmentTemplateSelect" class="template-select" onchange="applyTemplate('department')">
+                    <option value="">Выберите шаблон</option>
+                </select>
+                <input type="text" id="departmentTemplateInput" class="template-input" placeholder="Новый шаблон отделения">
+                <button onclick="addTemplate('department')" class="small-button">Добавить</button>
+                <div class="template-actions">
+                    <button onclick="editTemplate('department')" class="small-button" style="background: #28a745;">Изменить</button>
+                    <button onclick="deleteTemplate('department')" class="small-button" style="background: #dc3545;">Удалить</button>
+                </div>
+            </div>
+            <div id="departmentContent" class="template-content">
+                <!-- Динамически заполняется -->
+            </div>
+        </div>
+
+        <h1>ПРОТОКОЛ ЭХОКАРДИОГРАФИЧЕСКОГО ИССЛЕДОВАНИЯ</h1>
+    </div>
+
+    <div class="section">
+        <div class="patient-info">
+            <!-- Аппарат с шаблоном -->
+            <div class="form-group">
+                <div class="template-manager">
+                    <input type="checkbox" id="deviceTemplateCheckbox" onchange="toggleTemplate('device')">
+                    <label for="deviceTemplateCheckbox">Аппарат:</label>
+                    <select id="deviceTemplateSelect" class="template-select" onchange="applyTemplate('device')">
+                        <option value="">Выберите шаблон</option>
+                    </select>
+                    <input type="text" id="deviceTemplateInput" class="template-input" placeholder="Новый аппарат" style="width: 150px;">
+                    <button onclick="addTemplate('device')" class="small-button">+</button>
+                    <button onclick="editTemplate('device')" class="small-button" style="background: #28a745;">Изм</button>
+                    <button onclick="deleteTemplate('device')" class="small-button" style="background: #dc3545;">Уд</button>
+                </div>
+                <input type="text" id="device" style="margin-top: 5px;" placeholder="Введите аппарат">
+            </div>
+
+            <!-- Ультразвуковой датчик -->
+            <div class="form-group">
+                <div class="template-manager">
+                    <input type="checkbox" id="transducerTemplateCheckbox" onchange="toggleTemplate('transducer')">
+                    <label for="transducerTemplateCheckbox">Ультразвуковой датчик:</label>
+                    <select id="transducerTemplateSelect" class="template-select" onchange="applyTemplate('transducer')">
+                        <option value="">Выберите шаблон</option>
+                    </select>
+                    <input type="text" id="transducerTemplateInput" class="template-input" placeholder="Новый датчик" style="width: 150px;">
+                    <button onclick="addTemplate('transducer')" class="small-button">+</button>
+                    <button onclick="editTemplate('transducer')" class="small-button" style="background: #28a745;">Изм</button>
+                    <button onclick="deleteTemplate('transducer')" class="small-button" style="background: #dc3545;">Уд</button>
+                </div>
+                <input type="text" id="transducer" style="margin-top: 5px;" placeholder="Введите датчик">
+            </div>
+
+            <div class="form-group">
+                <label>Ф.И.О.:</label>
+                <input type="text" id="patientName" placeholder="Введите Ф.И.О.">
+            </div>
+            
+            <div class="form-group">
+                <label>Пол:</label>
+                <select id="gender">
+                    <option value="">Выберите пол</option>
+                    <option value="male">Мужской</option>
+                    <option value="female">Женский</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Дата рождения:</label>
+                <input type="date" id="birthDate">
+                <input type="text" id="age" style="width: 80px; margin-left: 5px;" placeholder="Возраст" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>№ИБ:</label>
+                <input type="text" id="medicalRecord" placeholder="Номер истории болезни">
+            </div>
+            
+            <!-- Отделение (шаблон) -->
+            <div class="form-group">
+                <div class="template-manager">
+                    <input type="checkbox" id="wardTemplateCheckbox" onchange="toggleTemplate('ward')">
+                    <label for="wardTemplateCheckbox">Отделение:</label>
+                    <select id="wardTemplateSelect" class="template-select" onchange="applyTemplate('ward')">
+                        <option value="">Выберите шаблон</option>
+                    </select>
+                    <input type="text" id="wardTemplateInput" class="template-input" placeholder="Новое отделение" style="width: 150px;">
+                    <button onclick="addTemplate('ward')" class="small-button">+</button>
+                    <button onclick="editTemplate('ward')" class="small-button" style="background: #28a745;">Изм</button>
+                    <button onclick="deleteTemplate('ward')" class="small-button" style="background: #dc3545;">Уд</button>
+                </div>
+                <input type="text" id="department" style="margin-top: 5px;" placeholder="Введите отделение">
+            </div>
+        </div>
+        
+        <div class="section-title">Антропометрические данные</div>
+        <div class="anthropometry-row">
+            <div class="anthropometry-item">
+                <label>Вес:</label>
+                <div class="anthropometry-input-group">
+                    <input type="number" id="weight_kg" placeholder="кг" 
+                           oninput="calculateAnthropometry(); if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('weight_kg')" 
+                           onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('weight_kg')">
+                    <span>кг</span>
+                    <input type="number" id="weight_g" placeholder="г" 
+                           oninput="calculateAnthropometry(); if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('weight_g')" 
+                           onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('weight_g')">
+                    <span>г</span>
+                </div>
+            </div>
+            
+            <div class="anthropometry-item">
+                <label>Рост:</label>
+                <div class="anthropometry-input-group">
+                    <input type="number" id="height" placeholder="см" 
+                           oninput="performRelevantCalculations('height'); if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('height')" 
+                           onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('height')">
+                    <span>см</span>
+                </div>
+            </div>
+            
+            <div class="anthropometry-item">
+                <label>Индекс массы тела:</label>
+                <div class="anthropometry-input-group">
+                    <input type="text" id="bmi" readonly>
+                    <span>кг/м²</span>
+                </div>
+            </div>
+            
+            <div class="anthropometry-item">
+                <label>Площадь поверхности тела (Haycock):</label>
+                <div class="anthropometry-input-group">
+                    <input type="text" id="bsa" readonly>
+                    <span>м²</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ритм и параметры -->
+        <div class="rhythm-row">
+            <div class="rhythm-item">
+                <div class="template-manager">
+                    <input type="checkbox" id="rhythmTemplateCheckbox" onchange="toggleTemplate('rhythm')">
+                    <label for="rhythmTemplateCheckbox">Ритм:</label>
+                    <select id="rhythmTemplateSelect" class="template-select" onchange="applyTemplate('rhythm')" style="width: 150px;">
+                        <option value="">Выберите шаблон</option>
+                    </select>
+                    <input type="text" id="rhythmTemplateInput" class="template-input" placeholder="Новый ритм" style="width: 120px;">
+                    <button onclick="addTemplate('rhythm')" class="small-button">+</button>
+                    <button onclick="editTemplate('rhythm')" class="small-button" style="background: #28a745;">Изм</button>
+                    <button onclick="deleteTemplate('rhythm')" class="small-button" style="background: #dc3545;">Уд</button>
+                </div>
+                <input type="text" id="rhythm" style="margin-top: 5px;" placeholder="Введите ритм">
+            </div>
+            
+            <div class="rhythm-item">
+                <label>ЧСС:</label>
+                <div class="rhythm-input-group">
+                    <input type="number" id="hr" placeholder="уд/мин" 
+                           oninput="performRelevantCalculations('hr')" 
+                           onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('hr')">
+                    <span>уд/мин</span>
+                </div>
+            </div>
+            
+            <div class="rhythm-item">
+                <label>Артериальное давление:</label>
+                <div class="rhythm-input-group">
+                    <span>САД</span>
+                    <input type="number" id="sbp" placeholder="120" style="width: 60px;">
+                    <span>/</span>
+                    <span>ДАД</span>
+                    <input type="number" id="dbp" placeholder="80" style="width: 60px;">
+                    <span>mmHg</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Чекбокс формирования сегментов -->
+    <div class="segments-checkbox-container">
+        <input type="checkbox" id="segmentsCheckbox" onchange="toggleSegments()">
+        <label for="segmentsCheckbox"><strong>Формирование и конкордантность сегментов:</strong></label>
+        
+        <div id="segmentsTemplateControls" class="template-manager" style="display: none; margin-top: 10px;">
+            <select id="segmentsTemplateSelect" class="template-select" onchange="applyTemplate('segments')" style="width: 200px;">
+                <option value="">Выберите шаблон</option>
+            </select>
+            <input type="text" id="segmentsTemplateInput" class="template-input" placeholder="Новый шаблон" style="width: 200px;">
+            <button onclick="addTemplate('segments')" class="small-button">+</button>
+                    <button onclick="editTemplate('segments')" class="small-button" style="background: #28a745;">Изм</button>
+                    <button onclick="deleteTemplate('segments')" class="small-button" style="background: #dc3545;">Уд</button>
+        </div>
+    </div>
+    
+    <!-- ФОРМИРОВАНИЕ СЕГМЕНТОВ (ОТДЕЛЬНО) -->
+    <div id="segmentsContent" class="segments-content" style="display: none;">
+        <textarea id="segments" rows="4" placeholder="Опишите формирование и конкордантность сегментов..."></textarea>
+    </div>
+    
+    <!-- МЕЖПРЕДСЕРДНАЯ И МЕЖЖЕЛУДОЧКОВАЯ ПЕРЕГОРОДКИ (ОТДЕЛЬНО) -->
+    <div class="structure-description">
+        <div class="structure-item">
+            <label>Межпредсердная перегородка:</label>
+            <input type="text" id="interatrialSeptum" style="width: 500px;" placeholder="Опишите состояние МПП">
+        </div>
+        <div class="structure-item">
+            <label>Межжелудочковая перегородка:</label>
+            <input type="text" id="interventricularSeptum" style="width: 500px;" placeholder="Опишите состояние МЖП">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Результаты измерений*</div>
+        <table class="measurements-table" id="measurementsTable">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Наименование показателя</th>
+                    <th style="width: 15%;">Измерение</th>
+                    <th style="width: 10%;">Ед.измер.</th>
+                    <th style="width: 15%;">Z-score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Аорта -->
+                <tr><td>Диаметр фиброзного кольца клапана аорты</td><td><input type="text" id="aortaAnnulus" placeholder="мм" oninput="performRelevantCalculations('aortaAnnulus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('aortaAnnulus')"></td><td>мм</td><td class="z-score-cell"><span id="z-aortaAnnulus">-</span></td></tr>
+                <tr><td>Диаметр аорты на уровне синусов Вальсальвы</td><td><input type="text" id="aortaSinus" placeholder="мм" oninput="performRelevantCalculations('aortaSinus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('aortaSinus')"></td><td>мм</td><td class="z-score-cell"><span id="z-aortaSinus">-</span></td></tr>
+                <tr><td>Диаметр сино-тубулярного соединения</td><td><input type="text" id="stj" placeholder="мм" oninput="performRelevantCalculations('stj')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('stj')"></td><td>мм</td><td class="z-score-cell"><span id="z-stj">-</span></td></tr>
+                <tr><td>Диаметр восходящего отдела аорты</td><td><input type="text" id="ascAorta" placeholder="мм" oninput="performRelevantCalculations('ascAorta')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('ascAorta')"></td><td>мм</td><td class="z-score-cell"><span id="z-ascAorta">-</span></td></tr>
+                <tr><td>Диаметр проксимального отдела дуги аорты</td><td><input type="text" id="proxArch" placeholder="мм" oninput="performRelevantCalculations('proxArch')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('proxArch')"></td><td>мм</td><td class="z-score-cell"><span id="z-proxArch">-</span></td></tr>
+                <tr><td>Диаметр дистального отдела дуги аорты</td><td><input type="text" id="distArch" placeholder="мм" oninput="performRelevantCalculations('distArch')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('distArch')"></td><td>мм</td><td class="z-score-cell"><span id="z-distArch">-</span></td></tr>
+                <tr><td>Диаметр перешейка аорты</td><td><input type="text" id="aorticIsthmus" placeholder="мм" oninput="performRelevantCalculations('aorticIsthmus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('aorticIsthmus')"></td><td>мм</td><td class="z-score-cell"><span id="z-aorticIsthmus">-</span></td></tr>
+                <tr><td>Диаметр нисходящего отдела аорты</td><td><input type="text" id="descAorta" placeholder="мм" oninput="performRelevantCalculations('descAorta')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('descAorta')"></td><td>мм</td><td class="z-score-cell"><span id="z-descAorta">-</span></td></tr>
+                <tr><td>Диаметр абдоминального отдела аорты</td><td><input type="text" id="abdoAorta" placeholder="мм" oninput="performRelevantCalculations('abdoAorta')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('abdoAorta')"></td><td>мм</td><td class="z-score-cell"><span id="z-abdoAorta">-</span></td></tr>
+                
+                <!-- Митральный клапан -->
+                <tr><td>Диаметр фиброзного кольца митрального клапана</td><td><input type="text" id="mvAnnulus" placeholder="мм" oninput="performRelevantCalculations('mvAnnulus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('mvAnnulus')"></td><td>мм</td><td class="z-score-cell"><span id="z-mvAnnulus">-</span></td></tr>
+                
+                <!-- Левое предсердие -->
+                <tr><td>Диаметр левого предсердия (A4ch)</td><td><input type="text" id="laDiameter" placeholder="мм" oninput="performRelevantCalculations('laDiameter')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('laDiameter')"></td><td>мм</td><td class="z-score-cell"><span id="z-laDiameter">-</span></td></tr>
+                <tr><td>Площадь левого предсердия (A4ch)</td><td><input type="text" id="laArea" placeholder="см²" oninput="performRelevantCalculations('laArea')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('laArea')"></td><td>см²</td><td class="z-score-cell"><span id="z-laArea">-</span></td></tr>
+                <tr><td>Левое предсердие, объем (Симпсон)</td><td><input type="text" id="la_volume" placeholder="мл" oninput="performRelevantCalculations('la_volume')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('la_volume')"></td><td>мл</td><td></td></tr>
+                <tr><td>Левое предсердие, индексированный объем (Симпсон)</td><td><input type="text" id="la_volume_index" readonly></td><td>мл/м²</td><td></td></tr>
+                
+                <!-- Левый желудочек -->
+                <tr><td>КДО левого желудочка (Simpson)
+                    <div class="template-manager">
+                        <input type="checkbox" id="simpsonMethodCheckbox" onchange="toggleSimpsonMethod()">
+                        <select id="simpsonMethod" onchange="calculateSimpsonParameters()" style="width: 130px; display: none;">
+                            <option value="">Выберите метод</option>
+                            <option value="a4ch">Simpson A4ch</option>
+                            <option value="biplane">Simpson biplane</option>
+                        </select>
+                    </div>
+                </td><td><input type="text" id="lvEDV" placeholder="мл" oninput="performRelevantCalculations('lvEDV')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lvEDV')"></td><td>мл</td><td class="z-score-cell"><span id="z-lvEDV">-</span></td></tr>
+                <tr><td>КСО левого желудочка (Simpson)</td><td><input type="text" id="lvESV" placeholder="мл" oninput="performRelevantCalculations('lvESV')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lvESV')"></td><td>мл</td><td></td></tr>
+                <tr><td>Ударный объем левого желудочка (Simpson)</td><td><input type="text" id="lvSV" readonly></td><td>мл</td><td></td></tr>
+                <tr><td>ФВ левого желудочка (Simpson)</td><td><input type="text" id="lvEFSimpson" readonly></td><td>%</td><td><input type="text" value="(норма≥55%)" readonly style="background: transparent; border: none; width: 100px;"></td></tr>
+                
+                <!-- Левый желудочек - Teichholz -->
+                <tr><td>КДР левого желудочка</td><td><input type="text" id="lvedd" placeholder="мм" oninput="performRelevantCalculations('lvedd')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lvedd')"></td><td>мм</td><td class="z-score-cell"><span id="z-lvedd">-</span></td></tr>
+                <tr><td>КСР левого желудочка</td><td><input type="text" id="lvesd" placeholder="мм" oninput="performRelevantCalculations('lvesd')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lvesd')"></td><td>мм</td><td></td></tr>
+                <tr><td>Фракция укорочения левого желудочка</td><td><input type="text" id="fs" readonly></td><td>%</td><td><input type="text" value="норма ≥28%" readonly style="background: transparent; border: none; width: 100px;"></td></tr>
+                
+                <!-- Strain ЛЖ -->
+                <tr><td>Показатель глобальной продольной деформации левого желудочка (strain)</td><td><input type="text" id="lvStrain" placeholder="%"></td><td>%</td><td></td></tr>
+                
+                <!-- Толщина стенок -->
+                <tr><td>Диастолическая толщина МЖП</td><td><input type="text" id="ivsd" placeholder="мм" oninput="performRelevantCalculations('ivsd')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('ivsd')"></td><td>мм</td><td class="z-score-cell"><span id="z-ivsd">-</span></td></tr>
+                <tr><td>Диастолическая толщина ЗСЛЖ</td><td><input type="text" id="lvpwd" placeholder="мм" oninput="performRelevantCalculations('lvpwd')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lvpwd')"></td><td>мм</td><td class="z-score-cell"><span id="z-lvpwd">-</span></td></tr>
+                
+                <!-- Масса миокарда -->
+                <tr><td>Индекс массы миокарда</td><td><input type="text" id="lvMassIndex" readonly></td><td>г/м²·⁷</td><td></td></tr>
+                
+                <!-- Правый желудочек -->
+                <tr><td>Базальный размер правого желудочка (A4ch)</td><td><input type="text" id="rvBasal" placeholder="мм" oninput="performRelevantCalculations('rvBasal')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('rvBasal')"></td><td>мм</td><td class="z-score-cell"><span id="z-rvBasal">-</span></td></tr>
+                <tr><td>Площадь правого желудочка (диастола)</td><td><input type="text" id="rvAreaDiastole" placeholder="см²" oninput="performRelevantCalculations('rvAreaDiastole')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('rvAreaDiastole')"></td><td>см²</td><td class="z-score-cell"><span id="z-rvAreaDiastole">-</span></td></tr>
+                <tr><td>Площадь правого желудочка (систола)</td><td><input type="text" id="rvAreaSystole" placeholder="см²" oninput="performRelevantCalculations('rvAreaSystole')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('rvAreaSystole')"></td><td>см²</td><td></td></tr>
+                <tr><td>Фракция сокращения площади правого желудочка</td><td><input type="text" id="rvFAC" readonly></td><td>%</td><td><input type="text" value="(норма≥35%)" readonly style="background: transparent; border: none; width: 100px;"></td></tr>
+                <tr><td>Показатель глобальной продольной деформации правого желудочка</td><td><input type="text" id="rvStrain" placeholder="%"></td><td>%</td><td></td></tr>
+                
+                <!-- Трикуспидальный клапан -->
+                <tr><td>Диаметр фиброзного кольца трикуспидального клапана</td><td><input type="text" id="tvAnnulus" placeholder="мм" oninput="performRelevantCalculations('tvAnnulus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('tvAnnulus')"></td><td>мм</td><td class="z-score-cell"><span id="z-tvAnnulus">-</span></td></tr>
+                
+                <!-- Правое предсердие -->
+                <tr><td>Диаметр правого предсердия (A4ch)</td><td><input type="text" id="raDiameter" placeholder="мм" oninput="performRelevantCalculations('raDiameter')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('raDiameter')"></td><td>мм</td><td class="z-score-cell"><span id="z-raDiameter">-</span></td></tr>
+                <tr><td>Правое предсердие Площадь (A4ch)</td><td><input type="text" id="raArea" placeholder="см²" oninput="performRelevantCalculations('raArea')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('raArea')"></td><td>см²</td><td class="z-score-cell"><span id="z-raArea">-</span></td></tr>
+                <tr><td>Правое предсердие, объем</td><td><input type="text" id="ra_volume" placeholder="мл" oninput="performRelevantCalculations('ra_volume')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('ra_volume')"></td><td>мл</td><td></td></tr>
+                <tr><td>Правое предсердие, индексированный объем</td><td><input type="text" id="ra_volume_index" readonly></td><td>мл/м²</td><td></td></tr>
+                
+                <!-- Легочная артерия -->
+                <tr><td>Диаметр фиброзного кольца клапана легочной артерии</td><td><input type="text" id="pvAnnulus" placeholder="мм" oninput="performRelevantCalculations('pvAnnulus')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('pvAnnulus')"></td><td>мм</td><td class="z-score-cell"><span id="z-pvAnnulus">-</span></td></tr>
+                <tr><td>Легочная артерия (ствол)</td><td><input type="text" id="paMain" placeholder="мм" oninput="performRelevantCalculations('paMain')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('paMain')"></td><td>мм</td><td class="z-score-cell"><span id="z-paMain">-</span></td></tr>
+                <tr><td>Легочная артерия (правая)</td><td><input type="text" id="paRight" placeholder="мм" oninput="performRelevantCalculations('paRight')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('paRight')"></td><td>мм</td><td class="z-score-cell"><span id="z-paRight">-</span></td></tr>
+                <tr><td>Легочная артерия (левая)</td><td><input type="text" id="paLeft" placeholder="мм" oninput="performRelevantCalculations('paLeft')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('paLeft')"></td><td>мм</td><td class="z-score-cell"><span id="z-paLeft">-</span></td></tr>
+                
+                <!-- КОРОНАРНЫЕ АРТЕРИИ -->
+                <tr style="background-color: #f0f8ff;">
+                    <td colspan="4" style="text-align: center; font-weight: bold; color: #2c3e50;">
+                        КОРОНАРНЫЕ АРТЕРИИ
+                    </td>
+                </tr>
+                <tr><td>Диаметр проксимального отдела левой общей коронарной артерии</td><td><input type="text" id="lmca" placeholder="мм" oninput="performRelevantCalculations('lmca')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lmca')"></td><td>мм</td><td class="z-score-cell"><span id="z-lmca">-</span></td></tr>
+                <tr><td>Диаметр проксимального отдела передней нисходящей коронарной артерии</td><td><input type="text" id="lad" placeholder="мм" oninput="performRelevantCalculations('lad')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lad')"></td><td>мм</td><td class="z-score-cell"><span id="z-lad">-</span></td></tr>
+                <tr><td>Диаметр проксимального отдела огибающей коронарной артерии</td><td><input type="text" id="lcx" placeholder="мм" oninput="performRelevantCalculations('lcx')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('lcx')"></td><td>мм</td><td class="z-score-cell"><span id="z-lcx">-</span></td></tr>
+                <tr><td>Диаметр проксимального отдела правой коронарной артерии</td><td><input type="text" id="rca" placeholder="мм" oninput="performRelevantCalculations('rca')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('rca')"></td><td>мм</td><td class="z-score-cell"><span id="z-rca">-</span></td></tr>
+            </tbody>
+        </table>
+        <div class="note">
+            *для расчета Z-score использованы популяционные данные Cantinotti (JASE 2014, 2017, 2020), Lopez et al. (JASE 2017, только толщина стенок ЛЖ), Ph.R.Khoury et al. (JASE 2009), Dallaire and Dahdah, JASE 2011
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">
+            Описание структур
+            <span class="template-manager">
+                <input type="checkbox" id="structuresNormal" onchange="applyStructuresNormal()">
+                <label for="structuresNormal">Норма</label>
+            </span>
+        </div>
+        <div class="structure-description">
+            <div class="structure-item">
+                <label>Левый желудочек:</label>
+                <input type="text" id="lvDescription" placeholder="Опишите состояние ЛЖ">
+            </div>
+            <div class="structure-item">
+                <label>Правый желудочек:</label>
+                <input type="text" id="rvDescription" placeholder="Опишите состояние ПЖ">
+            </div>
+            <div class="structure-item">
+                <label>Митральный клапан:</label>
+                <input type="text" id="mitralValve" placeholder="Опишите состояние МК">
+            </div>
+            <div class="structure-item">
+                <label>Аортальный клапан:</label>
+                <input type="text" id="aorticValve" placeholder="Опишите состояние АК">
+            </div>
+            <div class="structure-item">
+                <label>Трикуспидальный клапан:</label>
+                <input type="text" id="tricuspidValve" placeholder="Опишите состояние ТК">
+            </div>
+            <div class="structure-item">
+                <label>Клапан легочной артерии:</label>
+                <input type="text" id="pulmonaryValve" placeholder="Опишите состояние КЛА">
+            </div>
+            <div class="structure-item">
+                <label>Перикард:</label>
+                <input type="text" id="pericardium" placeholder="Опишите состояние перикарда">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Гемодинамические показатели</div>
+        
+        <div class="row">
+            <div class="col">
+                <!-- Митральный клапан -->
+                <table class="small-table">
+                    <tr><td colspan="3"><strong>Митральный клапан</strong></td></tr>
+                    <tr>
+                        <td>V(E)</td>
+                        <td><input type="text" id="ve" placeholder="м/с" oninput="performRelevantCalculations('ve')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('ve')"></td>
+                        <td>м/с</td>
+                    </tr>
+                    <tr>
+                        <td>Пик.гр.</td>
+                        <td><input type="text" id="mitralPeakGradient" readonly></td>
+                        <td>mmHg</td>
+                    </tr>
+                    <tr>
+                        <td>V(A)</td>
+                        <td><input type="text" id="va" placeholder="м/с" oninput="performRelevantCalculations('va')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('va')"></td>
+                        <td>м/с</td>
+                    </tr>
+                    <tr>
+                        <td>Пик.гр.</td>
+                        <td><input type="text" id="mitralAPeakGradient" readonly></td>
+                        <td>mmHg</td>
+                    </tr>
+                    <tr>
+                        <td>E/A</td>
+                        <td><input type="text" id="e_a_ratio" readonly></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>e' septal</td>
+                        <td><input type="text" id="e_septal" placeholder="см/с" oninput="performRelevantCalculations('e_septal')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('e_septal')"></td>
+                        <td>см/с</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <div class="eap-checkbox-container">
+                                <span>e' septal</span>
+                                <span class="eap-sign-display" id="e_septal_sign_display">?</span>
+                                <span>a' septal</span>
+                                <input type="checkbox" id="e_septal_checkbox" onchange="toggleEAPComparison('e_septal')">
+                            </div>
+                            <div id="e_septal_selector" style="display: none; margin-top: 3px;">
+                                <select id="e_septal_sign" onchange="updateEAPSign('e_septal')">
+                                    <option value="">выбрать</option>
+                                    <option value=">">></option>
+                                    <option value="<"><</option>
+                                    <option value="=">=</option>
+                                </select>
+                                <button class="small-button" onclick="collapseEAPComparison('e_septal')">OK</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>e' lateral</td>
+                        <td><input type="text" id="e_lateral" placeholder="см/с" oninput="performRelevantCalculations('e_lateral')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('e_lateral')"></td>
+                        <td>см/с</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <div class="eap-checkbox-container">
+                                <span>e' lateral</span>
+                                <span class="eap-sign-display" id="e_lateral_sign_display">?</span>
+                                <span>a' lateral</span>
+                                <input type="checkbox" id="e_lateral_checkbox" onchange="toggleEAPComparison('e_lateral')">
+                            </div>
+                            <div id="e_lateral_selector" style="display: none; margin-top: 3px;">
+                                <select id="e_lateral_sign" onchange="updateEAPSign('e_lateral')">
+                                    <option value="">выбрать</option>
+                                    <option value=">">></option>
+                                    <option value="<"><</option>
+                                    <option value="=">=</option>
+                                </select>
+                                <button class="small-button" onclick="collapseEAPComparison('e_lateral')">OK</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>E/e'</td>
+                        <td><input type="text" id="e_e_ratio" readonly></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col">
+                <!-- Аортальный клапан -->
+                <table class="small-table">
+                    <tr><td colspan="3"><strong>Аортальный клапан</strong></td></tr>
+                    <tr>
+                        <td>Vmax</td>
+                        <td><input type="text" id="aorticVmax" placeholder="м/с" oninput="performRelevantCalculations('aorticVmax')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('aorticVmax')"></td>
+                        <td>м/с</td>
+                    </tr>
+                    <tr>
+                        <td>Пик.гр.</td>
+                        <td><input type="text" id="aorticPeakGradient" readonly></td>
+                        <td>mmHg</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">Пик.гр. на перешейке аорты <input type="text" id="aorticIsthmusGradient" placeholder="mmHg"></td>
+                    </tr>
+                </table>
+                
+                <!-- ЦВК -->
+                <div class="hemodynamic-item">
+                    <div class="template-manager">
+                        <input type="checkbox" id="cvpTemplateCheckbox" onchange="toggleTemplate('cvp')">
+                        <label for="cvpTemplateCheckbox">ЦВК:</label>
+                        <select id="cvpTemplateSelect" class="template-select" onchange="applyTemplate('cvp')" style="width: 150px;">
+                            <option value="">Выберите шаблон</option>
+                        </select>
+                        <input type="text" id="cvpTemplateInput" class="template-input" placeholder="Новый шаблон ЦВК" style="width: 120px;">
+                        <button onclick="addTemplate('cvp')" class="small-button">+</button>
+                        <button onclick="editTemplate('cvp')" class="small-button" style="background: #28a745;">Изм</button>
+                        <button onclick="deleteTemplate('cvp')" class="small-button" style="background: #dc3545;">Уд</button>
+                    </div>
+                    <input type="text" id="cvp" style="margin-top: 5px; width: 200px;" placeholder="Введите ЦВК">
+                </div>
+                
+                <!-- Электрод ИКС -->
+                <div class="hemodynamic-item">
+                    <div class="template-manager">
+                        <input type="checkbox" id="icsTemplateCheckbox" onchange="toggleTemplate('ics')">
+                        <label for="icsTemplateCheckbox">Электрод ИКС:</label>
+                        <select id="icsTemplateSelect" class="template-select" onchange="applyTemplate('ics')" style="width: 150px;">
+                            <option value="">Выберите шаблон</option>
+                        </select>
+                        <input type="text" id="icsTemplateInput" class="template-input" placeholder="Новый шаблон ИКС" style="width: 120px;">
+                        <button onclick="addTemplate('ics')" class="small-button">+</button>
+                        <button onclick="editTemplate('ics')" class="small-button" style="background: #28a745;">Изм</button>
+                        <button onclick="deleteTemplate('ics')" class="small-button" style="background: #dc3545;">Уд</button>
+                    </div>
+                    <input type="text" id="ics" style="margin-top: 5px; width: 200px;" placeholder="Введите данные ИКС">
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <!-- Трикуспидальный клапан -->
+                <table class="small-table">
+                    <tr><td colspan="3"><strong>Трикуспидальный клапан</strong></td></tr>
+                    <tr>
+                        <td>V(E)</td>
+                        <td><input type="text" id="tvVe" placeholder="м/с" oninput="performRelevantCalculations('tvVe')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('tvVe')"></td>
+                        <td>м/с</td>
+                    </tr>
+                    <tr>
+                        <td>Пик.гр.</td>
+                        <td><input type="text" id="tvPeakGradient" readonly></td>
+                        <td>mmHg</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">Vmax регургитации <input type="text" id="tvRegurgVmax" placeholder="м/с" oninput="performRelevantCalculations('tvRegurgVmax')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('tvRegurgVmax')"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">Пиковый градиент регургитации <input type="text" id="tvRegurgGradient" readonly></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col">
+                <!-- Клапан легочной артерии -->
+                <table class="small-table">
+                    <tr><td colspan="3"><strong>Клапан легочной артерии</strong></td></tr>
+                    <tr>
+                        <td>Vmax</td>
+                        <td><input type="text" id="pvVmax" placeholder="м/с" oninput="performRelevantCalculations('pvVmax')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('pvVmax')"></td>
+                        <td>м/с</td>
+                    </tr>
+                    <tr>
+                        <td>Пик.гр.</td>
+                        <td><input type="text" id="pvPeakGradient" readonly></td>
+                        <td>mmHg</td>
+                    </tr>
+                </table>
+                
+                <!-- Нижняя полая вена с Z-score и ЦВД -->
+                <div class="hemodynamic-item">
+                    <strong>Нижняя полая вена:</strong>
+                    <div class="valve-param-row">
+                        <span>диаметр, мм</span>
+                        <input type="text" id="ivcDiameter" placeholder="мм" oninput="performRelevantCalculations('ivcDiameter')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('ivcDiameter')">
+                        <span class="z-score-cell" id="z-ivcDiameter" style="margin-left: 10px;">-</span>
+                    </div>
+                    <div class="valve-param-row">
+                        <span>ЦВД</span>
+                        <input type="text" id="cvpValue" placeholder="mmHg" style="width: 60px;" oninput="performRelevantCalculations('cvpValue')" onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('cvpValue')">
+                        <span>mmHg</span>
+                    </div>
+                    <div class="template-manager">
+                        <select id="ivcCollapse">
+                            <option value="">Выберите коллабирование</option>
+                            <option value="collapsible50">коллабирует > 50% на вдохе</option>
+                            <option value="collapsible50less">коллабирует < 50% на вдохе</option>
+                            <option value="noncollapsible">не коллабирует на вдохе</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Систолическое давление в ЛА (РАСЧЁТНОЕ) -->
+                <div class="hemodynamic-item">
+                    <div class="valve-param-row">
+                        <span>Систолическое давление в легочной артерии:</span>
+                        <input type="text" id="papValue" readonly style="width: 80px;">
+                        <span>mmHg</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- УО, СВ, СИ с ДОПОЛНИТЕЛЬНЫМИ ПОЛЯМИ -->
+        <div class="output-row">
+            <div class="output-item">
+                <label>Диаметр ВТЛЖ</label>
+                <input type="text" id="vtlzhDiameter" placeholder="см" 
+                       oninput="performRelevantCalculations('vtlzhDiameter')" 
+                       onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('vtlzhDiameter')">
+                <span>см</span>
+            </div>
+            <div class="output-item">
+                <label>VTI(ВТЛЖ)</label>
+                <input type="text" id="vtlzhVTI" placeholder="см" 
+                       oninput="performRelevantCalculations('vtlzhVTI')" 
+                       onblur="if(window.isMobileDevice && isMobileDevice()) forceMobileCalculation('vtlzhVTI')">
+                <span>см</span>
+            </div>
+            <div class="output-item">
+                <label>УО(ВТЛЖ)</label>
+                <input type="text" id="svVTLZH" readonly>
+                <span>мл</span>
+            </div>
+            <div class="output-item">
+                <label>СВ(ВТЛЖ)</label>
+                <input type="text" id="coVTLZH" readonly>
+                <span>л/мин</span>
+            </div>
+            <div class="output-item">
+                <label>СИ(ВТЛЖ)</label>
+                <input type="text" id="ciVTLZH" readonly>
+                <span>л/мин/м²</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Дополнительные особенности</div>
+        <textarea id="additionalFeatures" placeholder="Введите дополнительные особенности..."></textarea>
+    </div>
+
+    <div class="section">
+        <div class="section-title">
+            Заключение
+            <span class="template-manager">
+                <input type="checkbox" id="conclusionTemplateCheckbox" onchange="toggleTemplate('conclusion')">
+                <label for="conclusionTemplateCheckbox">Шаблон:</label>
+                <select id="conclusionTemplateSelect" class="template-select" onchange="applyTemplate('conclusion')" style="width: 180px;">
+                    <option value="">Выберите шаблон</option>
+                </select>
+                <input type="text" id="conclusionTemplateInput" class="template-input" placeholder="Новый шаблон заключения" style="width: 150px;">
+                <button onclick="addTemplate('conclusion')" class="small-button">+</button>
+                <button onclick="editTemplate('conclusion')" class="small-button" style="background: #28a745;">Изм</button>
+                <button onclick="deleteTemplate('conclusion')" class="small-button" style="background: #dc3545;">Уд</button>
+            </span>
+        </div>
+        <textarea id="conclusion" placeholder="Введите заключение..."></textarea>
+    </div>
+
+    <div class="signature">
+        <div class="form-group">
+            <label>Врач ультразвуковой диагностики:</label>
+            <input type="text" id="doctor" placeholder="Ф.И.О. врача">
+            <span>________________</span>
+        </div>
+        <div class="form-group">
+            <label>Дата выполнения:</label>
+            <input type="datetime-local" id="studyDate">
+        </div>
+    </div>
+
+    <!-- Панель управления (без кнопки Z-score) -->
+    <div class="controls no-print">
+        <button onclick="window.print()">🖨️ Печать</button>
+        <button onclick="saveForm()">💾 Сохранить</button>
+        <button onclick="clearForm()">🗑️ Очистить</button>
+        <button onclick="exportForm()">📤 Экспорт</button>
+        <button onclick="importForm()">📥 Импорт</button>
+        <button onclick="showSavedProtocols()">📋 Список сохраненных</button>
+        <button onclick="debugApp()">🐛 Отладка</button>
+    </div>
+
+    <!-- Минимальный инициализирующий скрипт -->
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOM загружен, инициализация...');
+            
+            // 1. Устанавливаем текущую дату по умолчанию
+            const now = new Date();
+            const studyDateInput = document.getElementById('studyDate');
+            if (studyDateInput && !studyDateInput.value) {
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                
+                studyDateInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+            
+            // 2. Инициализируем шаблоны
+            setTimeout(function() {
+                if (typeof initializeAllTemplateSelects === 'function') {
+                    initializeAllTemplateSelects();
+                    console.log('✅ Шаблоны инициализированы');
+                }
+            }, 300);
+            
+            // 3. Инициализируем обработчик десятичных разделителей
+            setTimeout(function() {
+                if (typeof setupDecimalSeparatorHandler === 'function') {
+                    setupDecimalSeparatorHandler();
+                    console.log('✅ Обработчик десятичных разделителей настроен');
+                }
+            }, 500);
+            
+            // 4. МОБИЛЬНЫЙ ФИКС: Добавляем обработчики для мобильных устройств
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                console.log('📱 Мобильное устройство обнаружено, настраиваю дополнительные обработчики...');
+                
+                // Добавляем обработчик для всех полей ввода
+                document.addEventListener('blur', function(event) {
+                    const target = event.target;
+                    if (target.tagName === 'INPUT' && target.type !== 'checkbox' && target.id) {
+                        // Задержка для мобильных устройств
+                        setTimeout(() => {
+                            if (typeof performRelevantCalculations === 'function' && target.value) {
+                                performRelevantCalculations(target.id);
+                            }
+                        }, 300);
+                    }
+                });
+                
+                // Активация расчетов при скрытии клавиатуры
+                document.addEventListener('focusout', function(event) {
+                    const target = event.target;
+                    if (target.tagName === 'INPUT' && target.id) {
+                        setTimeout(() => {
+                            if (target.id === 'height' || target.id === 'weight_kg' || target.id === 'weight_g') {
+                                if (typeof calculateAnthropometry === 'function') {
+                                    setTimeout(() => calculateAnthropometry(), 100);
+                                }
+                            }
+                        }, 200);
+                    }
+                });
+                
+                // Показываем уведомление о мобильной версии
+                console.log('📱 Мобильная версия активирована. Расчеты будут выполняться при потере фокуса.');
+            }
+        });
+    </script>
+</body>
+</html>
