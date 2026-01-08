@@ -353,11 +353,6 @@ function calculateLVParameters() {
         const fs = ((lvedd - lvesd) / lvedd * 100).toFixed(1);
         document.getElementById('fs').value = fs;
         
-        // Объемы и ФВ по Teichholz (упрощенная формула)
-        const lvedv = (7 * Math.pow(lvedd, 3)) / (2.4 + lvedd);
-        const lvesv = (7 * Math.pow(lvesd, 3)) / (2.4 + lvesd);
-        const lvef = ((lvedv - lvesv) / lvedv * 100).toFixed(1);
-        
         // ИНДЕКС МАССЫ МИОКАРДА - ИСПРАВЛЕННАЯ ФОРМУЛА
         if (ivsd > 0 && lvpwd > 0) {
             const lveddCm = lvedd / 10; // мм -> см
@@ -398,6 +393,145 @@ function calculateSimpsonParameters() {
     }
 }
 
+// ===== РАСЧЕТ ОТНОШЕНИЙ E/A И E/e' =====
+// Функция расчета E/A (остается без изменений, вызывается из app.js)
+function calculateEA() {
+    const ve = parseFloat(document.getElementById('ve').value) || 0;
+    const va = parseFloat(document.getElementById('va').value) || 0;
+    
+    if (ve > 0 && va > 0) {
+        const e_a_ratio = (ve / va).toFixed(2);
+        document.getElementById('e_a_ratio').value = e_a_ratio;
+        console.log('✅ E/A рассчитано:', e_a_ratio);
+    } else {
+        document.getElementById('e_a_ratio').value = '';
+    }
+}
+
+// Функция расчета E/e' (ОБНОВЛЕНА: использует среднее арифметическое e' septal и lateral)
+function calculateEe() {
+    const ve = parseFloat(document.getElementById('ve').value) || 0;
+    const eSeptal = parseFloat(document.getElementById('e_septal').value) || 0;
+    const eLateral = parseFloat(document.getElementById('e_lateral').value) || 0;
+    
+    // Преобразуем ve из м/с в см/с (умножаем на 100)
+    const ve_cm_s = ve * 100;
+    
+    // Определяем знаменатель: среднее значение, если оба e' введены, иначе доступное значение
+    let eAvg;
+    if (eSeptal > 0 && eLateral > 0) {
+        eAvg = (eSeptal + eLateral) / 2;
+        console.log(`📊 Используется среднее e': ${eAvg.toFixed(1)} см/с (septal=${eSeptal}, lateral=${eLateral})`);
+    } else if (eSeptal > 0) {
+        eAvg = eSeptal;
+        console.log(`📊 Используется e' septal: ${eAvg.toFixed(1)} см/с`);
+    } else if (eLateral > 0) {
+        eAvg = eLateral;
+        console.log(`📊 Используется e' lateral: ${eAvg.toFixed(1)} см/с`);
+    } else {
+        eAvg = 0;
+    }
+    
+    if (ve > 0 && eAvg > 0) {
+        const e_e_ratio = (ve_cm_s / eAvg).toFixed(1);
+        document.getElementById('e_e_ratio').value = e_e_ratio;
+        console.log(`✅ E/e' рассчитано: ${e_e_ratio} (E=${ve_cm_s.toFixed(1)} см/с, среднее e'=${eAvg.toFixed(1)} см/с)`);
+    } else {
+        document.getElementById('e_e_ratio').value = '';
+        if (ve > 0) {
+            console.log('⏳ Для расчета E/e\' необходимо ввести e\' septal или e\' lateral');
+        }
+    }
+}
+
+// ===== РАСЧЕТ ГРАДИЕНТОВ (УРАВНЕНИЕ БЕРНУЛЛИ 4V²) =====
+function calculateGradient(valveType) {
+    const gradientMap = {
+        'mitral': { vmaxId: 've', gradientId: 'mitralPeakGradient' },
+        'mitralA': { vmaxId: 'va', gradientId: 'mitralAPeakGradient' },
+        'aortic': { vmaxId: 'aorticVmax', gradientId: 'aorticPeakGradient' },
+        'tv': { vmaxId: 'tvVe', gradientId: 'tvPeakGradient' },
+        'pv': { vmaxId: 'pvVmax', gradientId: 'pvPeakGradient' }
+    };
+    
+    if (gradientMap[valveType]) {
+        const vmax = parseFloat(document.getElementById(gradientMap[valveType].vmaxId).value) || 0;
+        if (vmax > 0) {
+            const gradient = (4 * Math.pow(vmax, 2)).toFixed(1);
+            document.getElementById(gradientMap[valveType].gradientId).value = gradient;
+            console.log(`✅ Градиент ${valveType} рассчитан:`, gradient, 'mmHg');
+        } else {
+            document.getElementById(gradientMap[valveType].gradientId).value = '';
+        }
+    }
+}
+
+function calculateRegurgGradient(valveType) {
+    if (valveType === 'tv') {
+        const vmax = parseFloat(document.getElementById('tvRegurgVmax').value) || 0;
+        if (vmax > 0) {
+            const gradient = (4 * Math.pow(vmax, 2)).toFixed(1);
+            document.getElementById('tvRegurgGradient').value = gradient;
+            console.log('✅ Градиент регургитации ТК рассчитан:', gradient);
+        } else {
+            document.getElementById('tvRegurgGradient').value = '';
+        }
+    }
+}
+
+// ===== РАСЧЕТ УДАРНОГО ОБЪЕМА, СЕРДЕЧНОГО ВЫБРОСА И ИНДЕКСА =====
+function calculateSV() {
+    const diameter = parseFloat(document.getElementById('vtlzhDiameter').value) || 0;
+    const vti = parseFloat(document.getElementById('vtlzhVTI').value) || 0;
+    
+    if (diameter > 0 && vti > 0) {
+        const radius = diameter / 2;
+        const area = Math.PI * Math.pow(radius, 2);
+        const sv = (area * vti).toFixed(1);
+        document.getElementById('svVTLZH').value = sv;
+        console.log('✅ УО рассчитан:', sv, 'мл');
+    } else {
+        document.getElementById('svVTLZH').value = '';
+    }
+}
+
+function calculateHemodynamics() {
+    const sv = parseFloat(document.getElementById('svVTLZH').value) || 0;
+    const hr = parseFloat(document.getElementById('hr').value) || 0;
+    const bsa = parseFloat(document.getElementById('bsa').value) || 0;
+    
+    if (sv > 0 && hr > 0) {
+        const co = (sv * hr / 1000).toFixed(2);
+        document.getElementById('coVTLZH').value = co;
+        
+        if (bsa > 0) {
+            const ci = (co / bsa).toFixed(2);
+            document.getElementById('ciVTLZH').value = ci;
+            console.log(`✅ Гемодинамика: СВ=${co} л/мин, СИ=${ci} л/мин/м²`);
+        } else {
+            document.getElementById('ciVTLZH').value = '';
+            console.log(`✅ СВ рассчитан: ${co} л/мин (для СИ нужна ППТ)`);
+        }
+    } else {
+        document.getElementById('coVTLZH').value = '';
+        document.getElementById('ciVTLZH').value = '';
+    }
+}
+
+// ===== РАСЧЕТ ДАВЛЕНИЯ В ЛЕГОЧНОЙ АРТЕРИИ =====
+function calculatePAP() {
+    const cvp = parseFloat(document.getElementById('cvpValue').value) || 0;
+    const gradient = parseFloat(document.getElementById('tvRegurgGradient').value) || 0;
+    
+    if (gradient > 0) {
+        const pap = (gradient + cvp).toFixed(1);
+        document.getElementById('papValue').value = pap;
+        console.log('✅ Давление в ЛА рассчитано:', pap, 'mmHg');
+    } else {
+        document.getElementById('papValue').value = '';
+    }
+}
+
 // ===== ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ =====
 function updateWeight() {
     const weightG = parseFloat(document.getElementById('weight_g').value);
@@ -412,7 +546,8 @@ function updateWeight() {
     calculateAnthropometry();
 }
 
-// ===== ЭКСПОРТ ВСЕХ ФУНКЦИЙ =====
+// ===== ЭКСПОРТ ВСЕХ ФУНКЦИЙ ДЛЯ ГЛОБАЛЬНОГО ДОСТУПА =====
+// Эти функции будут доступны из других модулей (app.js, index.html)
 window.calculateBSAHaycock = calculateBSAHaycock;
 window.calculateAnthropometry = calculateAnthropometry;
 window.calculateAllZScores = calculateAllZScores;
@@ -421,12 +556,20 @@ window.calculateRAIndex = calculateRAIndex;
 window.calculateRVFAC = calculateRVFAC;
 window.calculateLVParameters = calculateLVParameters;
 window.calculateSimpsonParameters = calculateSimpsonParameters;
+window.calculateEA = calculateEA;
+window.calculateEe = calculateEe;
+window.calculateGradient = calculateGradient;
+window.calculateRegurgGradient = calculateRegurgGradient;
+window.calculateSV = calculateSV;
+window.calculateHemodynamics = calculateHemodynamics;
+window.calculatePAP = calculatePAP;
 window.updateWeight = updateWeight;
+window.updateZScoreElement = updateZScoreElement;
+window.clearZScoreElement = clearZScoreElement;
+window.clearAllZScoreFields = clearAllZScoreFields;
 
 console.log('✅ calculations.js загружен! Все функции доступны:');
 console.log('- calculateBSAHaycock:', typeof calculateBSAHaycock);
 console.log('- calculateAnthropometry:', typeof calculateAnthropometry);
 console.log('- calculateAllZScores:', typeof calculateAllZScores);
-console.log('- calculateLAIndex:', typeof calculateLAIndex);
-console.log('- calculateRAIndex:', typeof calculateRAIndex);
-console.log('- calculateRVFAC:', typeof calculateRVFAC);
+console.log('- calculateEe (обновленная):', typeof calculateEe);
